@@ -780,9 +780,10 @@
 
     .input-row input:disabled {
       opacity: .5;
-
       cursor: not-allowed;
     }
+
+    /* BUTTON */
 
     .btn {
       background: #00e676;
@@ -817,10 +818,24 @@
       color: #000;
     }
 
+    /* LOCKED BUTTON */
+
+    .btn:disabled,
     .btn.disabled {
       background: #3a3e4c;
+
       color: #777c8c;
+
       cursor: not-allowed;
+
+      opacity: 1;
+
+      transform: none;
+    }
+
+    .btn:disabled:active,
+    .btn.disabled:active {
+      transform: none;
     }
 
     .balance-box {
@@ -879,15 +894,27 @@
   </div>
 
   <!-- ROUND TIMER -->
+
   <div class="round-bar">
-    <span class="round-label" id="roundLabel">
-      BETTING OPEN
+
+    <span
+      class="round-label"
+      id="roundLabel"
+    >
+      BETTING OPENS IN
     </span>
 
-    <span class="round-time" id="roundTimer">
+    <span
+      class="round-time"
+      id="roundTimer"
+    >
       10
     </span>
+
   </div>
+
+
+  <!-- GAME SCREEN -->
 
   <section
     class="game-screen"
@@ -895,24 +922,31 @@
     aria-label="Game screen"
   >
 
-    <div class="scene" aria-hidden="true">
+    <div
+      class="scene"
+      aria-hidden="true"
+    >
 
       <!-- FIRE -->
 
       <div class="flame-bed">
+
         <i class="flame"></i>
         <i class="flame"></i>
         <i class="flame"></i>
         <i class="flame"></i>
         <i class="flame"></i>
         <i class="flame"></i>
+
       </div>
+
 
       <!-- SMOKE -->
 
       <i class="smoke"></i>
       <i class="smoke s2"></i>
       <i class="smoke s3"></i>
+
 
       <!-- PAN -->
 
@@ -968,6 +1002,7 @@
 
       </div>
 
+
       <!-- CHEF -->
 
       <div
@@ -991,6 +1026,7 @@
               x2="1"
               y2="1"
             >
+
               <stop
                 offset="0"
                 stop-color="#8dde62"
@@ -1000,7 +1036,9 @@
                 offset="1"
                 stop-color="#319b49"
               />
+
             </linearGradient>
+
 
             <linearGradient
               id="hatShade"
@@ -1009,6 +1047,7 @@
               x2="0"
               y2="1"
             >
+
               <stop
                 offset="0"
                 stop-color="#fff"
@@ -1018,9 +1057,11 @@
                 offset="1"
                 stop-color="#d9dce2"
               />
+
             </linearGradient>
 
           </defs>
+
 
           <!-- HAT -->
 
@@ -1044,6 +1085,7 @@
             stroke="#bac1ca"
             stroke-width="3"
           />
+
 
           <!-- FACE -->
 
@@ -1075,6 +1117,7 @@
             ry="10"
             fill="#70c954"
           />
+
 
           <!-- EYES -->
 
@@ -1128,6 +1171,7 @@
             fill="#fff"
           />
 
+
           <!-- NOSE -->
 
           <ellipse
@@ -1146,6 +1190,7 @@
             fill="#235d35"
           />
 
+
           <!-- SMILE -->
 
           <path
@@ -1163,6 +1208,7 @@
             stroke-width="1.5"
             opacity=".75"
           />
+
 
           <!-- BODY -->
 
@@ -1205,6 +1251,9 @@
 
     </div>
 
+
+    <!-- MULTIPLIER -->
+
     <div
       class="multiplier"
       id="mult"
@@ -1212,14 +1261,18 @@
       1.00x
     </div>
 
+
+    <!-- STATUS -->
+
     <div
       class="status"
       id="status"
     >
-      Place your bet to start
+      Get ready...
     </div>
 
   </section>
+
 
   <!-- HISTORY -->
 
@@ -1228,6 +1281,7 @@
     id="history"
     aria-label="Recent rounds"
   ></div>
+
 
   <!-- CONTROLS -->
 
@@ -1253,16 +1307,19 @@
 
     </label>
 
+
     <button
-      class="btn"
+      class="btn disabled"
       id="actionBtn"
       type="button"
       onclick="handleClick()"
+      disabled
     >
-      START GAME
+      WAIT 10s
     </button>
 
   </div>
+
 
   <!-- BALANCE -->
 
@@ -1287,8 +1344,8 @@
      GAME SETTINGS
   ========================================= */
 
-  const BETTING_TIME = 10;       // 10 seconds
-  const ROUND_TIME = 180;        // 3 minutes
+  const BETTING_TIME = 10;
+  const ROUND_TIME = 180;
 
 
   /* =========================================
@@ -1297,7 +1354,21 @@
 
   let balance = 10000;
 
-  let state = "BETTING";
+  /*
+   * LOCKED
+   * = waiting for 10 second countdown
+   *
+   * BETTING
+   * = START GAME button available
+   *
+   * RUNNING
+   * = game is running
+   *
+   * WAITING
+   * = short delay between rounds
+   */
+
+  let state = "LOCKED";
 
   let currentMultiplier = 1.0;
   let crashPoint = 1.0;
@@ -1780,32 +1851,44 @@
   }
 
 
+  /* =========================================
+     10 SECOND LOCK
+  ========================================= */
+
   function startBettingPhase() {
 
     clearInterval(roundTimer);
 
-    state = "BETTING";
+    state = "LOCKED";
 
     roundRemaining =
       BETTING_TIME;
 
     roundLabelEl.innerText =
-      "BETTING OPEN";
+      "BETTING OPENS IN";
 
     updateRoundTimer();
 
+    /*
+     * IMPORTANT:
+     * Bet amount can still be changed.
+     * Only START GAME is locked.
+     */
+
     betInput.disabled = false;
 
-    btnEl.disabled = false;
+    btnEl.disabled = true;
 
     btnEl.className =
-      "btn";
+      "btn disabled";
 
     btnEl.innerText =
-      "START GAME";
+      "WAIT " +
+      roundRemaining +
+      "s";
 
     statusEl.innerText =
-      "Place your bet! Round starts soon.";
+      "Get ready...";
 
     multEl.innerText =
       "1.00x";
@@ -1824,6 +1907,11 @@
       "0"
     );
 
+
+    /*
+     * COUNTDOWN
+     */
+
     roundTimer =
       setInterval(() => {
 
@@ -1831,30 +1919,54 @@
 
         updateRoundTimer();
 
+        /*
+         * Still locked
+         */
+
         if (
-          roundRemaining <= 0
+          roundRemaining > 0
         ) {
 
-          clearInterval(roundTimer);
+          btnEl.innerText =
+            "WAIT " +
+            roundRemaining +
+            "s";
 
-          roundTimer = null;
-
-          /*
-           * Betting window finished.
-           * We keep the game waiting for
-           * the player to press START.
-           */
-
-          roundLabelEl.innerText =
-            "ROUND READY";
-
-          roundTimerEl.innerText =
-            "00";
-
-          statusEl.innerText =
-            "Round ready — press START GAME";
-
+          return;
         }
+
+
+        /*
+         * 10 SECONDS FINISHED
+         */
+
+        clearInterval(roundTimer);
+
+        roundTimer = null;
+
+        state = "BETTING";
+
+        roundLabelEl.innerText =
+          "BETTING OPEN";
+
+        roundTimerEl.innerText =
+          "READY";
+
+        roundTimerEl.classList.remove(
+          "warning",
+          "danger"
+        );
+
+        btnEl.disabled = false;
+
+        btnEl.className =
+          "btn";
+
+        btnEl.innerText =
+          "START GAME";
+
+        statusEl.innerText =
+          "Place your bet to start!";
 
       }, 1000);
   }
@@ -1865,6 +1977,11 @@
   ========================================= */
 
   function startGame() {
+
+    /*
+     * Cannot start unless betting
+     * is officially open.
+     */
 
     if (state !== "BETTING") {
       return;
@@ -1893,6 +2010,8 @@
     }
 
     clearInterval(roundTimer);
+
+    roundTimer = null;
 
     balance -= bet;
 
@@ -1935,6 +2054,8 @@
     statusEl.innerText =
       "Cooking... Cash out before it burns!";
 
+    btnEl.disabled = false;
+
     btnEl.innerText =
       "CASH OUT (" +
       (bet * currentMultiplier).toFixed(0) +
@@ -1950,9 +2071,7 @@
     startBoilSound();
 
 
-    /*
-     * CRASH POINT
-     */
+    /* CRASH POINT */
 
     const rand =
       Math.random();
@@ -1974,12 +2093,11 @@
       crashPoint =
         4.0 +
         Math.random() * 8.0;
+
     }
 
 
-    /*
-     * GAME TIMER
-     */
+    /* GAME TIMER */
 
     const startTime =
       Date.now();
@@ -1991,9 +2109,8 @@
           (Date.now() - startTime) /
           1000;
 
-        /*
-         * Round countdown
-         */
+
+        /* ROUND COUNTDOWN */
 
         roundRemaining =
           Math.max(
@@ -2005,9 +2122,7 @@
         updateRoundTimer();
 
 
-        /*
-         * Multiplier
-         */
+        /* MULTIPLIER */
 
         currentMultiplier =
           1.0 +
@@ -2025,9 +2140,7 @@
         );
 
 
-        /*
-         * Tick sound
-         */
+        /* TICK SOUND */
 
         if (
           currentMultiplier >=
@@ -2040,12 +2153,11 @@
 
           lastTickMultiplier =
             currentMultiplier;
+
         }
 
 
-        /*
-         * UI
-         */
+        /* UI */
 
         multEl.innerText =
           currentMultiplier.toFixed(2) +
@@ -2060,9 +2172,7 @@
           " $WRC)";
 
 
-        /*
-         * CRASH
-         */
+        /* CRASH */
 
         if (
           currentMultiplier >=
@@ -2075,9 +2185,7 @@
         }
 
 
-        /*
-         * 3 MINUTE ROUND LIMIT
-         */
+        /* 3 MINUTE LIMIT */
 
         if (
           elapsed >= ROUND_TIME
@@ -2154,12 +2262,6 @@
         1,
         currentMultiplier
       );
-
-    /*
-     * If the 3-minute timer ends,
-     * automatically cash out the current
-     * position.
-     */
 
     const winAmount =
       Math.floor(
@@ -2272,7 +2374,7 @@
       "NEXT ROUND...";
 
     roundLabelEl.innerText =
-      "NEXT BETTING";
+      "NEXT ROUND";
 
     roundRemaining =
       BETTING_TIME;
@@ -2281,8 +2383,8 @@
       BETTING_TIME;
 
     /*
-     * Small delay so the player can see
-     * the crash / escape result.
+     * Short delay so the player can
+     * see the result before countdown.
      */
 
     setTimeout(() => {
@@ -2301,17 +2403,23 @@
 
     ensureAudio();
 
-    if (state === "BETTING") {
+    /*
+     * LOCKED = 10 second countdown.
+     * Do absolutely nothing.
+     */
 
-      /*
-       * Allow betting during the
-       * 10 second betting window.
-       */
+    if (state === "LOCKED") {
+      return;
+    }
+
+
+    if (state === "BETTING") {
 
       startGame();
 
       return;
     }
+
 
     if (state === "RUNNING") {
 
@@ -2328,6 +2436,10 @@
   ========================================= */
 
   updateBalance();
+
+  /*
+   * Start with 10 second lock.
+   */
 
   startBettingPhase();
 
