@@ -1,0 +1,643 @@
+<!doctype html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10100f">
+  <title>Don't Get Cooked
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10100f;
+      --panel: #191917;
+      --line: #30302b;
+      --text: #f5f1e7;
+      --muted: #aaa79c;
+      --orange: #ff6b35;
+      --yellow: #ffd166;
+      --green: #a8e063;
+      --red: #ff5364;
+    }
+
+    - {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% 0%, #342018 0, transparent 43%),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .game {
+      width: min(100%, 520px);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-icon {
+      font-size: 30px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 5vw, 27px);
+      letter-spacing: -.04em;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .token {
+      border: 1px solid #48402a;
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: var(--yellow);
+      background: #201c12;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--panel), transparent 3%);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px #0008;
+    }
+
+    .stage {
+      min-height: 305px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #251c17, #171614 80%);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stage:before {
+      content: "";
+      position: absolute;
+      inset: auto -15% -100px;
+      height: 190px;
+      border-radius: 50%;
+      background: #35241a;
+      border: 1px solid #50301f;
+      box-shadow: 0 -18px 70px #ff6b3510;
+    }
+
+    .steam {
+      position: absolute;
+      top: 40px;
+      color: #8e8170;
+      opacity: .42;
+      font-size: 24px;
+      letter-spacing: 17px;
+      animation: float 2.3s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      to {
+        transform: translateY(-12px);
+        opacity: .7;
+      }
+    }
+
+    .avatar {
+      z-index: 1;
+      font-size: 86px;
+      filter: drop-shadow(0 12px 12px #0008);
+      transition: transform .15s;
+    }
+
+    .avatar.jump {
+      transform: translateY(-9px) rotate(-5deg);
+    }
+
+    .multiplier {
+      z-index: 1;
+      margin-top: 4px;
+      font-size: clamp(46px, 13vw, 68px);
+      font-weight: 900;
+      letter-spacing: -.06em;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .multiplier.hot {
+      color: var(--yellow);
+    }
+
+    .status {
+      z-index: 1;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .status.crashed {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .status.cashed {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .amount {
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .betbox {
+      display: flex;
+      align-items: center;
+      justify-content: space-betwee
+      n;
+      gap: 8px;
+      margin: 13px 0 17px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #11110f;
+    }
+
+    .betbox button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      background: #22221e;
+      color: var(--text);
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .betbox button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .bet-input {
+      width: 100%;
+      text-align: center;
+      background: transparent;
+      border: 0;
+      outline: 0;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .bet-input::-webkit-inner-spin-button {
+      appearance: none;
+    }
+
+    .action {
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--orange);
+      color: #1b100b;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: filter .15s, transform .15s;
+    }
+
+    .action:hover:not(:disabled) {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .action:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .action.cash {
+      background: var(--green);
+    }
+
+    .payout {
+      margin-top: 14px;
+    }
+
+    .fine {
+      margin: 16px 4px 0;
+      color: #89867d;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .history {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 14px;
+      min-height: 29px;
+    }
+
+    .pill {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #24211c;
+      color: var(--yellow);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .pill.low {
+      color: var(--red);
+    }
+  
+
+
+<body>
+  <main class="game">
+    <header>
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🍳
+        <div>
+          <h1>DON'T GET COOKED
+          <div class="sub">A crash game demo
+        
+      
+
+      <div class="token">$WRC · BASE
+    
+
+    <section class="card" aria-label="Crash game">
+      <div class="stage">
+        <div class="steam" aria-hidden="true">〰 〰 〰
+        <div class="avatar" id="avatar" aria-label="Chef avatar">🐸👨‍🍳
+        <div class="multiplier" id="multiplier">1.00x
+        <div class="status" id="status" aria-live="polite">Ready when you are
+      
+
+      <div class="content">
+        <div class="row">
+          <span class="label">Demo entry
+          <span class="amount">100 $COOK
+        
+
+        <div class="row" style="margin-
+    top:6px">
+          <span class="label">Demo balance
+          <span class="amount" id="balance">1,000 $COOK
+        
+
+        <div class="betbox" aria-label="Demo entry amount">
+          <button id="minus" type="button" aria-label="Decrease demo entry">−
+
+          <input
+            class="bet-input"
+            id="bet"
+            type="number"
+            min="100"
+            step="100"
+            value="100"
+            aria-label="Demo entry amount in COOK"
+          >
+
+          <button id="plus" type="button" aria-label="Increase demo entry">+
+        
+
+        <button class="action" id="action" type="button">
+          START ROUND · 100 $COOK
+        
+
+        <div class="row payout">
+          <span class="label">Potential cash out
+          <span class="amount" id="potential">100 $COOK
+        
+
+        <div class="history" id="history" aria-label="Recent crash points">
+      
+    
+
+    <p class="fine">
+      Demo only. No wallet connection, blockchain transaction, token transfer, or real-money wager is made
+    
+  
+
+  <script>
+    (() => {
+      const ENTRY_MIN = 100;
+      const STARTING_BALANCE = 1000;
+      const GROWTH_RATE = 0.42;
+
+      const $ = (id) => document.getElementById(id);
+
+      const betInput = $("bet");
+      const action = $("action");
+      co
+      nst multiplierText = $("multiplier");
+      const statusText = $("status");
+      const balanceText = $("balance");
+      const potentialText = $("potential");
+      const avatar = $("avatar");
+      const historyNode = $("history");
+
+      let balance = STARTING_BALANCE;
+      let bet = ENTRY_MIN;
+      let current = 1;
+      let crashAt = 1;
+      let running = false;
+      let settled = false;
+      let startedAt = 0;
+      let frame = 0;
+      let timer = null;
+      const history = [];
+
+      const fmt = (n) => Math.floor(n).toLocaleString("en-US");
+
+      function updateBalance() {
+        balanceText.textContent = ${fmt(balance)} $COOK;
+      }
+
+      function updateBet() {
+        const raw = Number(betInput.value);
+
+        bet = Number.isFinite(raw)
+          ? Math.max(ENTRY_MIN, Math.floor(raw / 100) * 100)
+          : ENTRY_MIN;
+
+        betInput.value = String(bet);
+
+        $("minus").disabled = running || bet <= ENTRY_MIN;
+        $("plus").disabled = running;
+
+        $("minus").setAttribute(
+          "aria-disabled",
+          String(running || bet <= ENTRY_MIN)
+        );
+
+        $("plus").setAttribute(
+          "aria-disabled",
+          String(running)
+        );
+
+        $("minus").style.opacity = $("minus").disabled ? ".45" : "1";
+        $("plus").style
+        .opacity = $("plus").disabled ? ".45" : "1";
+
+        action.textContent = running
+          ? "CASH OUT"
+          : START ROUND · ${fmt(bet)} $COOK;
+
+        potentialText.textContent =
+          ${fmt(running ? bet * current : bet)} $COOK;
+
+        if (!running && !settled) {
+          action.disabled = balance < bet;
+        }
+      }
+
+      function setState(message, kind = "") {
+        statusText.textContent = message;
+        statusText.className = status ${kind}.trim();
+      }
+
+      function chooseCrashPoint() {
+        const r = Math.random();
+
+        if (r < 0.035) {
+          return 1;
+        }
+
+        return Math.min(
+          100,
+          Math.max(1.01, 0.97 / (1 - r))
+        );
+      }
+
+      function renderHistory() {
+        historyNode.replaceChildren(
+          ...history.map((point) => {
+            const el = document.createElement("span");
+
+            el.className = pill${point < 2 ? " low" : ""};
+            el.textContent = ${point.toFixed(2)}x;
+
+            return el;
+          })
+        );
+      }
+
+      function finishCrash() {
+        running = false;
+        settled = true;
+
+        cancelAnimationFrame(frame);
+        clearTimeout(timer);
+
+        current = crashAt;
+        multiplierText.textContent = ${crashAt.toFixed(2)}x;
+        multi
+plierText.classList.remove("hot");
+        avatar.classList.remove("jump");
+
+        history.unshift(crashAt);
+        history.splice(8);
+        renderHistory();
+
+        setState(
+          COOKED at ${crashAt.toFixed(2)}x · demo entry lost,
+          "crashed"
+        );
+
+        action.textContent = "PLAY AGAIN";
+        action.disabled = false;
+
+        updateBet();
+        action.textContent = "PLAY AGAIN";
+      }
+
+      function tick(now) {
+        if (!running) {
+          return;
+        }
+
+        current = Math.exp(
+          ((now - startedAt) / 1000) * GROWTH_RATE
+        );
+
+        if (current >= crashAt) {
+          finishCrash();
+          return;
+        }
+
+        multiplierText.textContent = ${current.toFixed(2)}x;
+        multiplierText.classList.toggle("hot", current >= 2);
+
+        avatar.classList.toggle(
+          "jump",
+          Math.floor(now / 180) % 2 === 0
+        );
+
+        potentialText.textContent =
+          ${fmt(bet * current)} $COOK;
+
+        frame = requestAnimationFrame(tick);
+      }
+
+      function startRound() {
+        if (bet < ENTRY_MIN || bet > balance) {
+          setState(
+            bet > balance
+              ? "Not enough demo balance"
+              : "Minimum entry is 100 $COOK"
+          );
+
+          return;
+        }
+      balance -= bet;
+        updateBalance();
+
+        running = true;
+        settled = false;
+        current = 1;
+        crashAt = chooseCrashPoint();
+        startedAt = performance.now();
+
+        multiplierText.textContent = "1.00x";
+        multiplierText.classList.remove("hot");
+
+        setState("Climbing… cash out before the crash");
+
+        action.classList.add("cash");
+        action.disabled = false;
+
+        updateBet();
+        action.classList.add("cash");
+
+        if (crashAt <= 1) {
+          timer = setTimeout(finishCrash, 360);
+        }
+
+        frame = requestAnimationFrame(tick);
+      }
+
+      function cashOut() {
+        if (!running || settled) {
+          return;
+        }
+
+        running = false;
+        settled = true;
+
+        cancelAnimationFrame(frame);
+        clearTimeout(timer);
+
+        const winnings = Math.floor(bet * current);
+
+        balance += winnings;
+        updateBalance();
+
+        multiplierText.textContent = ${current.toFixed(2)}x;
+        multiplierText.classList.remove("hot");
+        avatar.classList.remove("jump");
+
+        history.unshift(current);
+        history.splice(8);
+        renderHistory();
+
+        setState(
+          CASHED OUT · +${fmt(winnings)} $COOK demo payout,
+          "cashed"
+        );
+
+        action.
+       disabled = false;
+        updateBet();
+        action.textContent = "PLAY AGAIN";
+        action.classList.remove("cash");
+      }
+
+      function resetRound() {
+        settled = false;
+        current = 1;
+
+        multiplierText.textContent = "1.00x";
+        multiplierText.classList.remove("hot");
+        avatar.classList.remove("jump");
+
+        setState("Ready when you are");
+
+        action.classList.remove("cash");
+        updateBet();
+      }
+
+      $("minus").addEventListener("click", () => {
+        betInput.value = String(Math.max(ENTRY_MIN, bet - 100));
+        updateBet();
+      });
+
+      $("plus").addEventListener("click", () => {
+        betInput.value = String(bet + 100);
+        updateBet();
+      });
+
+      betInput.addEventListener("change", updateBet);
+
+      action.addEventListener("click", () => {
+        if (running) {
+          cashOut();
+        } else if (settled) {
+          resetRound();
+        } else {
+          startRound();
+        }
+      });
+
+      updateBalance();
+      updateBet();
+      renderHistory();
+    })();                                
+                                         
