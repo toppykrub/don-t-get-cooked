@@ -899,6 +899,8 @@
     /* WINNING CASH-OUT EFFECT */
     .floating-cashout { position:absolute; z-index:10; left:50%; top:42%; max-width:calc(100% - 24px); padding:7px 12px; border:1px solid rgba(0,230,118,.48); border-radius:999px; background:rgba(8,24,17,.78); color:#00e676; font-size:clamp(1rem,5vw,1.45rem); line-height:1.2; font-weight:900; white-space:nowrap; pointer-events:none; text-align:center; text-shadow:0 0 8px #00e676,0 0 22px rgba(0,230,118,.8); box-shadow:0 0 24px rgba(0,230,118,.35); animation:cashoutFloat 1.35s cubic-bezier(.18,.72,.25,1) forwards; }
     @keyframes cashoutFloat { 0% { opacity:0; transform:translate(-50%,16px) scale(.68); } 14% { opacity:1; transform:translate(-50%,0) scale(1.12); } 28% { transform:translate(-50%,-4px) scale(1); } 100% { opacity:0; transform:translate(-50%,-76px) scale(.96); } }
+
+    .floating-cashout.loss { color:#ff5252; border-color:rgba(255,82,82,.55); background:rgba(32,9,11,.82); text-shadow:0 0 8px #ff5252,0 0 22px rgba(255,82,82,.85); box-shadow:0 0 24px rgba(255,82,82,.38); }
     @media (max-width:360px) { .floating-cashout { padding:6px 9px; font-size:1rem; } }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1572,10 +1574,27 @@
     });
   }
 
-  function showCashOutWin(amount) {
-    const floatingText=document.createElement("div"); floatingText.className="floating-cashout"; floatingText.setAttribute("aria-live","polite");
-    floatingText.textContent="+"+amount.toLocaleString(undefined,{maximumFractionDigits:2})+" $WRC"; screenEl.appendChild(floatingText);
+  function showCashOutWin(amount, isLoss = false) {
+    const floatingText=document.createElement("div");
+    floatingText.className="floating-cashout"+(isLoss ? " loss" : "");
+    floatingText.setAttribute("aria-live","polite");
+    floatingText.textContent=(isLoss ? "-" : "+")+amount.toLocaleString(undefined,{maximumFractionDigits:2})+" $WRC";
+    screenEl.appendChild(floatingText);
     floatingText.addEventListener("animationend",()=>floatingText.remove(),{once:true});
+  }
+
+
+  function playLossSound() {
+    const ctx=ensureAudio();
+    if(!ctx) return;
+    const now=ctx.currentTime;
+    [[185,.0,.24],[138,.17,.34]].forEach(([frequency,delay,duration])=>{
+      const oscillator=ctx.createOscillator(); const gain=ctx.createGain(); const onset=now+delay;
+      oscillator.type="triangle"; oscillator.frequency.setValueAtTime(frequency,onset);
+      oscillator.frequency.exponentialRampToValueAtTime(Math.max(55,frequency*.72),onset+duration);
+      gain.gain.setValueAtTime(.0001,onset); gain.gain.exponentialRampToValueAtTime(.12,onset+.015); gain.gain.exponentialRampToValueAtTime(.0001,onset+duration);
+      oscillator.connect(gain); gain.connect(ctx.destination); oscillator.start(onset); oscillator.stop(onset+duration+.025);
+    });
   }
 
   function playStartSound() {
@@ -2309,6 +2328,8 @@
     );
 
     playCrashSound();
+    playLossSound();
+    showCashOutWin(bet, true);
 
     addHistory(
       crashPoint,
