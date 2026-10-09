@@ -895,6 +895,12 @@
     .reward-tag { display:inline-block; margin-left:5px; padding:3px 6px; color:#9cf6ff; background:#00bcd41c; border:1px solid #00bcd444; border-radius:6px; font-size:.6rem; font-weight:900; }
     @media(max-width:420px) { .header { gap:8px; } .title { font-size:1.05rem; } .header-actions { gap:5px; } .leaderboard-trigger { padding:7px 8px; font-size:.7rem; } .leaderboard-modal { padding:15px; } .leaderboard-tab { font-size:.7rem; } }
 
+
+    /* WINNING CASH-OUT EFFECT */
+    .floating-cashout { position:absolute; z-index:10; left:50%; top:42%; max-width:calc(100% - 24px); padding:7px 12px; border:1px solid rgba(0,230,118,.48); border-radius:999px; background:rgba(8,24,17,.78); color:#00e676; font-size:clamp(1rem,5vw,1.45rem); line-height:1.2; font-weight:900; white-space:nowrap; pointer-events:none; text-align:center; text-shadow:0 0 8px #00e676,0 0 22px rgba(0,230,118,.8); box-shadow:0 0 24px rgba(0,230,118,.35); animation:cashoutFloat 1.35s cubic-bezier(.18,.72,.25,1) forwards; }
+    @keyframes cashoutFloat { 0% { opacity:0; transform:translate(-50%,16px) scale(.68); } 14% { opacity:1; transform:translate(-50%,0) scale(1.12); } 28% { transform:translate(-50%,-4px) scale(1); } 100% { opacity:0; transform:translate(-50%,-76px) scale(.96); } }
+    @media (max-width:360px) { .floating-cashout { padding:6px 9px; font-size:1rem; } }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -1553,6 +1559,24 @@
     );
   }
 
+
+  function playCashOutWinSound() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [[880,0,.13],[1174.66,.075,.16],[1567.98,.15,.24],[2093,.24,.3],[2637,.32,.2]].forEach(([frequency,delay,duration],index) => {
+      const oscillator=ctx.createOscillator(); const gain=ctx.createGain(); const onset=now+delay;
+      oscillator.type=index===0 ? "triangle" : "sine"; oscillator.frequency.setValueAtTime(frequency,onset); oscillator.frequency.exponentialRampToValueAtTime(frequency*1.025,onset+duration);
+      gain.gain.setValueAtTime(.0001,onset); gain.gain.exponentialRampToValueAtTime(index===3?.085:.06,onset+.012); gain.gain.exponentialRampToValueAtTime(.0001,onset+duration);
+      oscillator.connect(gain); gain.connect(ctx.destination); oscillator.start(onset); oscillator.stop(onset+duration+.02);
+    });
+  }
+
+  function showCashOutWin(amount) {
+    const floatingText=document.createElement("div"); floatingText.className="floating-cashout"; floatingText.setAttribute("aria-live","polite");
+    floatingText.textContent="+"+amount.toLocaleString(undefined,{maximumFractionDigits:2})+" $WRC"; screenEl.appendChild(floatingText);
+    floatingText.addEventListener("animationend",()=>floatingText.remove(),{once:true});
+  }
 
   function playStartSound() {
 
@@ -2396,7 +2420,8 @@
       "escaped"
     );
 
-    playCashoutSound();
+    playCashOutWinSound();
+    showCashOutWin(winAmount);
 
     addHistory(
       currentMultiplier,
