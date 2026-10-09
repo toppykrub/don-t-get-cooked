@@ -901,6 +901,11 @@
 
 
 
+
+.sound-toggle { width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; color:#bcecff; background:linear-gradient(145deg,#192532,#151a24); border:1px solid #35495a; border-radius:12px; box-shadow:0 4px 14px #0006; font-size:1.12rem; cursor:pointer; transition:transform .16s,border-color .16s,color .16s,box-shadow .16s; }
+.sound-toggle:hover { transform:translateY(-2px); color:#fff; border-color:#5ab5ef; box-shadow:0 0 16px #168bd544; }
+.sound-toggle[aria-pressed="true"] { color:#ffbd84; border-color:#76513d; }
+@media(max-width:600px) { .sound-toggle { width:34px; height:34px; border-radius:10px; font-size:1rem; } }
     .top-social-bar { position:fixed; z-index:16; top:16px; right:300px; display:flex; align-items:center; gap:9px; }
 .social-link { width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; color:#d5e5f4; background:linear-gradient(145deg,#192532,#151a24); border:1px solid #35495a; border-radius:12px; box-shadow:0 4px 14px #0006; transition:transform .16s,border-color .16s,color .16s,box-shadow .16s; }
 .social-link:hover { transform:translateY(-2px); color:#fff; border-color:#5ab5ef; box-shadow:0 0 16px #168bd544; }
@@ -1389,6 +1394,12 @@
 
 <div class="leaderboard-overlay" id="leaderboardOverlay" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle" onclick="if(event.target===this) closeLeaderboard()"><section class="leaderboard-modal"><div class="leaderboard-heading"><h2 id="leaderboardTitle">🏆 Leaderboard</h2><button class="leaderboard-close" type="button" aria-label="Close leaderboard" onclick="closeLeaderboard()">×</button></div><div class="leaderboard-tabs" role="tablist"><button class="leaderboard-tab active" type="button" role="tab" data-mode="multiplier" onclick="renderLeaderboard('multiplier')">🚀 Max Multiplier</button><button class="leaderboard-tab" type="button" role="tab" data-mode="volume" onclick="renderLeaderboard('volume')">🐋 Total Volume ($WRC)</button></div><div class="leaderboard-table-wrap"><table class="leaderboard-table"><thead><tr><th>Rank</th><th>Player</th><th id="leaderboardStatHeading">Max x</th></tr></thead><tbody id="leaderboardRows"></tbody></table></div></section></div>
 <div class="wallet-toast" id="walletToast" role="status" aria-live="polite">Wallet connection on Base coming soon! Stay tuned.</div>
+
+<nav class="top-social-bar" aria-label="Social links">
+<a class="social-link" href="https://x.com/wearecookedbase" target="_blank" rel="noopener noreferrer" aria-label="Follow on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.5l7.3-8.4L1.9 2h6.5l4.5 6.8L18.9 2Zm-1.1 17.9h1.7L7.4 4H5.6l12.2 15.9Z"/></svg></a>
+<a class="social-link telegram-link" href="https://t.me/+1WuRbHrDYTAzNzFl" target="_blank" rel="noopener noreferrer" aria-label="Join on Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.8 3.6 18.5 20c-.2 1.2-.9 1.5-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6 13.5 1.1 12c-1.1-.3-1.1-1 .2-1.5L20.4 3c.9-.3 1.7.2 1.4.6Z"/></svg></a>
+<button class="sound-toggle" id="soundToggle" type="button" aria-label="Sound on" aria-pressed="false" title="Sound on">🔊</button>
+</nav>
 <script>
   let walletToastTimer = null;
   function showWalletToast() {
@@ -1439,7 +1450,11 @@
 
   let roundRemaining = BETTING_TIME;
 
-  let audioContext = null;
+  const SOUND_MUTED_KEY = "dgcSoundMuted";
+let isSoundMuted = false;
+  try { isSoundMuted = localStorage.getItem(SOUND_MUTED_KEY) === "true"; } catch (_) {}
+let audioContext = null;
+  let masterGain = null;
 
   let lastTickMultiplier = 1;
 
@@ -1504,12 +1519,34 @@
     document.getElementById("roundTimer");
 
 
+  const soundToggleEl = document.getElementById("soundToggle");
+function updateSoundToggle() {
+soundToggleEl.textContent = isSoundMuted ? "🔇" : "🔊";
+soundToggleEl.setAttribute("aria-pressed", String(isSoundMuted));
+soundToggleEl.setAttribute("aria-label", isSoundMuted ? "Sound off" : "Sound on");
+soundToggleEl.title = isSoundMuted ? "Sound off" : "Sound on";
+}
+function toggleSound() {
+isSoundMuted = !isSoundMuted;
+try { localStorage.setItem(SOUND_MUTED_KEY, String(isSoundMuted)); } catch (_) {}
+if (audioContext) {
+const now = audioContext.currentTime;
+
+if (masterGain) masterGain.gain.setTargetAtTime(isSoundMuted ? 0 : 1, now, .015);
+if (!isSoundMuted && boilGain) boilGain.gain.setTargetAtTime(.018, now, .02);
+}
+updateSoundToggle();
+}
+soundToggleEl.addEventListener("click", toggleSound);
+updateSoundToggle();
+
   /* =========================================
      AUDIO
   ========================================= */
 
   function ensureAudio() {
 
+    if (isSoundMuted) return null;
     const AudioCtx =
       window.AudioContext ||
       window.webkitAudioContext;
@@ -1518,6 +1555,9 @@
 
     if (!audioContext) {
       audioContext = new AudioCtx();
+      masterGain = audioContext.createGain();
+      masterGain.gain.value = isSoundMuted ? 0 : 1;
+      masterGain.connect(audioContext.destination);
     }
 
     if (audioContext.state === "suspended") {
@@ -1535,6 +1575,8 @@
     volume,
     endFrequency
   ) {
+    if (isSoundMuted) return;
+
 
     const ctx = ensureAudio();
 
@@ -1583,7 +1625,7 @@
     );
 
     oscillator.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
 
     oscillator.start(now);
 
@@ -1594,6 +1636,8 @@
 
 
   function playCashOutWinSound() {
+    if (isSoundMuted) return;
+
     const ctx = ensureAudio();
     if (!ctx) return;
     const now = ctx.currentTime;
@@ -1601,7 +1645,7 @@
       const oscillator=ctx.createOscillator(); const gain=ctx.createGain(); const onset=now+delay;
       oscillator.type=index===0 ? "triangle" : "sine"; oscillator.frequency.setValueAtTime(frequency,onset); oscillator.frequency.exponentialRampToValueAtTime(frequency*1.025,onset+duration);
       gain.gain.setValueAtTime(.0001,onset); gain.gain.exponentialRampToValueAtTime(index===3?.085:.06,onset+.012); gain.gain.exponentialRampToValueAtTime(.0001,onset+duration);
-      oscillator.connect(gain); gain.connect(ctx.destination); oscillator.start(onset); oscillator.stop(onset+duration+.02);
+      oscillator.connect(gain); gain.connect(masterGain); oscillator.start(onset); oscillator.stop(onset+duration+.02);
     });
   }
 
@@ -1616,6 +1660,8 @@
 
 
   function playLossSound() {
+    if (isSoundMuted) return;
+
     const ctx=ensureAudio();
     if(!ctx) return;
     const now=ctx.currentTime;
@@ -1624,7 +1670,7 @@
       oscillator.type="triangle"; oscillator.frequency.setValueAtTime(frequency,onset);
       oscillator.frequency.exponentialRampToValueAtTime(Math.max(55,frequency*.72),onset+duration);
       gain.gain.setValueAtTime(.0001,onset); gain.gain.exponentialRampToValueAtTime(.12,onset+.015); gain.gain.exponentialRampToValueAtTime(.0001,onset+duration);
-      oscillator.connect(gain); gain.connect(ctx.destination); oscillator.start(onset); oscillator.stop(onset+duration+.025);
+      oscillator.connect(gain); gain.connect(masterGain); oscillator.start(onset); oscillator.stop(onset+duration+.025);
     });
   }
 
@@ -1674,6 +1720,8 @@
 
 
   function startBoilSound() {
+    if (isSoundMuted) return;
+
 
     const ctx = ensureAudio();
 
@@ -1710,7 +1758,7 @@
     filter.connect(boilGain);
 
     boilGain.connect(
-      ctx.destination
+      masterGain
     );
 
     boilOscillator.start();
@@ -1724,7 +1772,10 @@
 
 
   function updateBoilSound(multiplier) {
+    if (isSoundMuted) return;
 
+
+    if (isSoundMuted) return;
     if (
       !audioContext ||
       !boilOscillator ||
@@ -2574,9 +2625,6 @@
 
 </script>
 
-<nav class="top-social-bar" aria-label="Social links">
-<a class="social-link" href="https://x.com/wearecookedbase" target="_blank" rel="noopener noreferrer" aria-label="Follow on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.5l7.3-8.4L1.9 2h6.5l4.5 6.8L18.9 2Zm-1.1 17.9h1.7L7.4 4H5.6l12.2 15.9Z"/></svg></a>
-<a class="social-link telegram-link" href="https://t.me/+1WuRbHrDYTAzNzFl" target="_blank" rel="noopener noreferrer" aria-label="Join on Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.8 3.6 18.5 20c-.2 1.2-.9 1.5-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6 13.5 1.1 12c-1.1-.3-1.1-1 .2-1.5L20.4 3c.9-.3 1.7.2 1.4.6Z"/></svg></a>
-</nav>
+
 </body>
 </html>
