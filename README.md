@@ -6,7 +6,7 @@ Live Demo
 🔗 view-link.cx/vL9Vf0rpQnJ
 
 Features
-- 1-minute round cycles with a 10-second betting window
+- 3-minute round cycles with a 10-second betting window
 - Real-time multiplier mechanics
 - Pepe Chef & copper pan visuals with sound effects
 - Web3 degen vibes on Base
