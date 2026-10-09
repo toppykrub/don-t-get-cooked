@@ -893,6 +893,10 @@
     .leaderboard-table tr.you-row { background:#00e67612; color:#8dffbd; font-weight:800; }
     .leaderboard-table .rank { color:#ffd166; font-weight:800; }
     .reward-tag { display:inline-block; margin-left:5px; padding:3px 6px; color:#9cf6ff; background:#00bcd41c; border:1px solid #00bcd444; border-radius:6px; font-size:.6rem; font-weight:900; }
+    .crown { display:inline-block; margin-right:4px; font-size:.95em; line-height:1; filter:drop-shadow(0 0 4px currentColor); }
+    .crown-gold { color:#FFD700; }
+    .crown-silver { color:#C0C0C0; }
+    .crown-bronze { color:#CD7F32; }
     @media(max-width:420px) { .header { gap:8px; } .title { font-size:1.05rem; } .header-actions { gap:5px; } .leaderboard-trigger { padding:7px 8px; font-size:.7rem; } .leaderboard-modal { padding:15px; } .leaderboard-tab { font-size:.7rem; } }
 
 
@@ -1434,9 +1438,13 @@
     document.getElementById("leaderboardStatHeading").textContent = mode === "multiplier" ? "Max x" : "Volume $WRC";
     document.querySelectorAll(".leaderboard-tab").forEach(tab => tab.classList.toggle("active",tab.dataset.mode === mode));
     document.getElementById("leaderboardRows").innerHTML = rows.map((row,index) => {
-      const reward = index < 10 ? '<span class="reward-tag">REWARD USDC</span>' : "";
+      const rank = index + 1;
+      const crownClass = rank === 1 ? "crown-gold" : rank === 2 ? "crown-silver" : rank === 3 ? "crown-bronze" : "";
+      const crown = crownClass ? '<span class="crown ' + crownClass + '" aria-label="Rank ' + rank + ' crown">👑</span>' : "";
+      const rewardAmounts = [10,5,3,1,1];
+      const reward = rank <= 5 ? '<span class="reward-tag">' + rewardAmounts[rank-1] + ' USDC</span>' : "";
       const stat = mode === "multiplier" ? row.value.toFixed(2) + "x" : row.value.toLocaleString(undefined,{maximumFractionDigits:2});
-      return '<tr class="' + (row.you ? "you-row" : "") + '"><td class="rank">#' + (index+1) + '</td><td>' + row.name + reward + '</td><td>' + stat + '</td></tr>';
+      return '<tr class="' + (row.you ? "you-row" : "") + '"><td class="rank">#' + rank + '</td><td>' + crown + row.name + reward + '</td><td>' + stat + '</td></tr>';
     }).join("");
   }
 
