@@ -901,11 +901,11 @@
 
 
 
-    .wallet-coming-soon { border:1px solid #3b5268; background:linear-gradient(135deg,#172532,#1a1d26); color:#b8dfff; padding:8px 10px; border-radius:11px; font-size:.73rem; font-weight:800; cursor:pointer; white-space:nowrap; box-shadow:0 3px 12px #0004; transition:transform .15s,border-color .2s,box-shadow .2s,color .2s; }
-    .wallet-coming-soon:hover { transform:translateY(-1px); border-color:#55b6ff; color:#e6f5ff; box-shadow:0 0 14px #168bd544; }
+    .wallet-coming-soon { position:fixed; z-index:15; top:16px; right:16px; border:1px solid #3b5268; background:linear-gradient(135deg,#172532,#1a1d26); color:#b8dfff; padding:8px 14px; border-radius:999px; font-size:.76rem; font-weight:800; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px #0006; transition:transform .15s,border-color .2s,box-shadow .2s,color .2s; }
+    .wallet-coming-soon:hover { transform:translateY(-1px); border-color:#55b6ff; color:#e6f5ff; box-shadow:0 0 16px #168bd544; }
+    @media(max-width:420px) { .wallet-coming-soon { top:10px; right:10px; padding:7px 10px; font-size:.68rem; } body { padding-top:58px; } }
     .wallet-toast { position:fixed; z-index:30; left:50%; bottom:22px; width:max-content; max-width:calc(100vw - 32px); padding:12px 16px; border:1px solid #35536a; border-radius:12px; background:#171e28; color:#eaf6ff; text-align:center; font-size:.88rem; font-weight:700; box-shadow:0 10px 30px #0009,0 0 18px #168bd533; opacity:0; transform:translate(-50%,12px); pointer-events:none; transition:opacity .2s,transform .2s; }
     .wallet-toast.show { opacity:1; transform:translate(-50%,0); }
-    @media(max-width:420px) { .header { align-items:flex-start; } .header-actions { width:100%; justify-content:flex-end; flex-wrap:wrap; } .wallet-coming-soon { padding:7px 8px; font-size:.68rem; } }
     /* WINNING CASH-OUT EFFECT */
     .floating-cashout { position:absolute; z-index:10; left:50%; top:42%; max-width:calc(100% - 24px); padding:7px 12px; border:1px solid rgba(0,230,118,.48); border-radius:999px; background:rgba(8,24,17,.78); color:#00e676; font-size:clamp(1rem,5vw,1.45rem); line-height:1.2; font-weight:900; white-space:nowrap; pointer-events:none; text-align:center; text-shadow:0 0 8px #00e676,0 0 22px rgba(0,230,118,.8); box-shadow:0 0 24px rgba(0,230,118,.35); animation:cashoutFloat 1.35s cubic-bezier(.18,.72,.25,1) forwards; }
     @keyframes cashoutFloat { 0% { opacity:0; transform:translate(-50%,16px) scale(.68); } 14% { opacity:1; transform:translate(-50%,0) scale(1.12); } 28% { transform:translate(-50%,-4px) scale(1); } 100% { opacity:0; transform:translate(-50%,-76px) scale(.96); } }
@@ -927,11 +927,13 @@
 
 <body>
 
+<button class="wallet-coming-soon" type="button" onclick="showWalletToast()">🔗 Connect Wallet (Coming Soon)</button>
+
 <main class="card">
 
   <div class="header">
     <div class="title">Don't Get Cooked!</div>
-    <div class="header-actions"><div class="badge">$WRC DEMO</div><button class="wallet-coming-soon" type="button" onclick="showWalletToast()">🔗 Connect Wallet (Coming Soon)</button><button class="leaderboard-trigger" type="button" onclick="openLeaderboard()">🏆 Leaderboard</button></div>
+    <div class="header-actions"><div class="badge">$WRC DEMO</div><button class="leaderboard-trigger" type="button" onclick="openLeaderboard()">🏆 Leaderboard</button></div>
   </div>
 
   <!-- ROUND TIMER -->
