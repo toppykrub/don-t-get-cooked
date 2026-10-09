@@ -900,6 +900,12 @@
     @media(max-width:420px) { .header { gap:8px; } .title { font-size:1.05rem; } .header-actions { gap:5px; } .leaderboard-trigger { padding:7px 8px; font-size:.7rem; } .leaderboard-modal { padding:15px; } .leaderboard-tab { font-size:.7rem; } }
 
 
+
+    .wallet-coming-soon { border:1px solid #3b5268; background:linear-gradient(135deg,#172532,#1a1d26); color:#b8dfff; padding:8px 10px; border-radius:11px; font-size:.73rem; font-weight:800; cursor:pointer; white-space:nowrap; box-shadow:0 3px 12px #0004; transition:transform .15s,border-color .2s,box-shadow .2s,color .2s; }
+    .wallet-coming-soon:hover { transform:translateY(-1px); border-color:#55b6ff; color:#e6f5ff; box-shadow:0 0 14px #168bd544; }
+    .wallet-toast { position:fixed; z-index:30; left:50%; bottom:22px; width:max-content; max-width:calc(100vw - 32px); padding:12px 16px; border:1px solid #35536a; border-radius:12px; background:#171e28; color:#eaf6ff; text-align:center; font-size:.88rem; font-weight:700; box-shadow:0 10px 30px #0009,0 0 18px #168bd533; opacity:0; transform:translate(-50%,12px); pointer-events:none; transition:opacity .2s,transform .2s; }
+    .wallet-toast.show { opacity:1; transform:translate(-50%,0); }
+    @media(max-width:420px) { .header { align-items:flex-start; } .header-actions { width:100%; justify-content:flex-end; flex-wrap:wrap; } .wallet-coming-soon { padding:7px 8px; font-size:.68rem; } }
     /* WINNING CASH-OUT EFFECT */
     .floating-cashout { position:absolute; z-index:10; left:50%; top:42%; max-width:calc(100% - 24px); padding:7px 12px; border:1px solid rgba(0,230,118,.48); border-radius:999px; background:rgba(8,24,17,.78); color:#00e676; font-size:clamp(1rem,5vw,1.45rem); line-height:1.2; font-weight:900; white-space:nowrap; pointer-events:none; text-align:center; text-shadow:0 0 8px #00e676,0 0 22px rgba(0,230,118,.8); box-shadow:0 0 24px rgba(0,230,118,.35); animation:cashoutFloat 1.35s cubic-bezier(.18,.72,.25,1) forwards; }
     @keyframes cashoutFloat { 0% { opacity:0; transform:translate(-50%,16px) scale(.68); } 14% { opacity:1; transform:translate(-50%,0) scale(1.12); } 28% { transform:translate(-50%,-4px) scale(1); } 100% { opacity:0; transform:translate(-50%,-76px) scale(.96); } }
@@ -925,7 +931,7 @@
 
   <div class="header">
     <div class="title">Don't Get Cooked!</div>
-    <div class="header-actions"><div class="badge">$WRC DEMO</div><button class="leaderboard-trigger" type="button" onclick="openLeaderboard()">🏆 Leaderboard</button></div>
+    <div class="header-actions"><div class="badge">$WRC DEMO</div><button class="wallet-coming-soon" type="button" onclick="showWalletToast()">🔗 Connect Wallet (Coming Soon)</button><button class="leaderboard-trigger" type="button" onclick="openLeaderboard()">🏆 Leaderboard</button></div>
   </div>
 
   <!-- ROUND TIMER -->
@@ -1374,7 +1380,16 @@
 
 
 <div class="leaderboard-overlay" id="leaderboardOverlay" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle" onclick="if(event.target===this) closeLeaderboard()"><section class="leaderboard-modal"><div class="leaderboard-heading"><h2 id="leaderboardTitle">🏆 Leaderboard</h2><button class="leaderboard-close" type="button" aria-label="Close leaderboard" onclick="closeLeaderboard()">×</button></div><div class="leaderboard-tabs" role="tablist"><button class="leaderboard-tab active" type="button" role="tab" data-mode="multiplier" onclick="renderLeaderboard('multiplier')">🚀 Max Multiplier</button><button class="leaderboard-tab" type="button" role="tab" data-mode="volume" onclick="renderLeaderboard('volume')">🐋 Total Volume ($WRC)</button></div><div class="leaderboard-table-wrap"><table class="leaderboard-table"><thead><tr><th>Rank</th><th>Player</th><th id="leaderboardStatHeading">Max x</th></tr></thead><tbody id="leaderboardRows"></tbody></table></div></section></div>
+<div class="wallet-toast" id="walletToast" role="status" aria-live="polite">Wallet connection on Base coming soon! Stay tuned.</div>
 <script>
+  let walletToastTimer = null;
+  function showWalletToast() {
+    const toast = document.getElementById("walletToast");
+    toast.classList.add("show");
+    clearTimeout(walletToastTimer);
+    walletToastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
+  }
+
 
   /* =========================================
      GAME SETTINGS
@@ -1441,7 +1456,7 @@
       const rank = index + 1;
       const crownClass = rank === 1 ? "crown-gold" : rank === 2 ? "crown-silver" : rank === 3 ? "crown-bronze" : "";
       const crown = crownClass ? '<span class="crown ' + crownClass + '" aria-label="Rank ' + rank + ' crown">👑</span>' : "";
-      const rewardAmounts = [10,5,3,1,1];
+      const rewardAmounts = [50,25,15,7,3];
       const reward = rank <= 5 ? '<span class="reward-tag">' + rewardAmounts[rank-1] + ' USDC</span>' : "";
       const stat = mode === "multiplier" ? row.value.toFixed(2) + "x" : row.value.toLocaleString(undefined,{maximumFractionDigits:2});
       return '<tr class="' + (row.you ? "you-row" : "") + '"><td class="rank">#' + rank + '</td><td>' + crown + row.name + reward + '</td><td>' + stat + '</td></tr>';
