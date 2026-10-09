@@ -901,6 +901,12 @@
 
 
 
+    .top-social-bar { position:fixed; z-index:16; top:16px; right:300px; display:flex; align-items:center; gap:9px; }
+.social-link { width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; color:#d5e5f4; background:linear-gradient(145deg,#192532,#151a24); border:1px solid #35495a; border-radius:12px; box-shadow:0 4px 14px #0006; transition:transform .16s,border-color .16s,color .16s,box-shadow .16s; }
+.social-link:hover { transform:translateY(-2px); color:#fff; border-color:#5ab5ef; box-shadow:0 0 16px #168bd544; }
+.social-link svg { width:18px; height:18px; fill:currentColor; }
+.telegram-link { color:#66c8f5; } .telegram-link:hover { color:#a3e1ff; }
+@media(max-width:600px) { .top-social-bar { top:10px; left:10px; right:auto; gap:6px; } .social-link { width:34px; height:34px; border-radius:10px; } .social-link svg { width:16px; height:16px; } .wallet-coming-soon { top:10px; right:10px; padding:7px 9px; font-size:.65rem; } body { padding-top:58px; } }
     .wallet-coming-soon { position:fixed; z-index:15; top:16px; right:16px; border:1px solid #3b5268; background:linear-gradient(135deg,#172532,#1a1d26); color:#b8dfff; padding:8px 14px; border-radius:999px; font-size:.76rem; font-weight:800; cursor:pointer; white-space:nowrap; box-shadow:0 4px 16px #0006; transition:transform .15s,border-color .2s,box-shadow .2s,color .2s; }
     .wallet-coming-soon:hover { transform:translateY(-1px); border-color:#55b6ff; color:#e6f5ff; box-shadow:0 0 16px #168bd544; }
     @media(max-width:420px) { .wallet-coming-soon { top:10px; right:10px; padding:7px 10px; font-size:.68rem; } body { padding-top:58px; } }
@@ -2568,5 +2574,9 @@
 
 </script>
 
+<nav class="top-social-bar" aria-label="Social links">
+<a class="social-link" href="https://x.com/wearecookedbase" target="_blank" rel="noopener noreferrer" aria-label="Follow on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.5l7.3-8.4L1.9 2h6.5l4.5 6.8L18.9 2Zm-1.1 17.9h1.7L7.4 4H5.6l12.2 15.9Z"/></svg></a>
+<a class="social-link telegram-link" href="https://t.me/+1WuRbHrDYTAzNzFl" target="_blank" rel="noopener noreferrer" aria-label="Join on Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.8 3.6 18.5 20c-.2 1.2-.9 1.5-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6 13.5 1.1 12c-1.1-.3-1.1-1 .2-1.5L20.4 3c.9-.3 1.7.2 1.4.6Z"/></svg></a>
+</nav>
 </body>
 </html>
