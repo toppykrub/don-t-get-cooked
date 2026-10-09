@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f1117" />
 
-  <title>Don't Get Cooked! ($WRC) — v11</title>
+  <title>Don't Get Cooked! ($WRC)</title>
 
   <style>
     * {
@@ -1400,11 +1400,7 @@
 <a class="social-link telegram-link" href="https://t.me/+1WuRbHrDYTAzNzFl" target="_blank" rel="noopener noreferrer" aria-label="Join on Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.8 3.6 18.5 20c-.2 1.2-.9 1.5-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L6 13.5 1.1 12c-1.1-.3-1.1-1 .2-1.5L20.4 3c.9-.3 1.7.2 1.4.6Z"/></svg></a>
 <button class="sound-toggle" id="soundToggle" type="button" aria-label="Sound on" aria-pressed="false" title="Sound on">🔊</button>
 </nav>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const SUPABASE_URL = "https://cwcgmsqvbsyfiqwersxl.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3Y2dtc3F2YnN5Zmlxd2Vyc3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NjY4OTIsImV4cCI6MjEwNzE0Mjg5Mn0.XSaSHjhCHGO9YyYxBgmSR6v_kndMs1fVIs1_wjknwQA";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let walletToastTimer = null;
   function showWalletToast() {
     const toast = document.getElementById("walletToast");
@@ -1466,15 +1462,29 @@ let audioContext = null;
   let boilGain = null;
 
 
-  const OFFLINE_PLAYER_KEY="dgcOfflinePlayer", PLAYER_ID_KEY="dgcPlayerId";
-  function getPlayerId(){try{let id=localStorage.getItem(PLAYER_ID_KEY);if(!id){id="Player-"+Math.random().toString(36).slice(2,8).toUpperCase();localStorage.setItem(PLAYER_ID_KEY,id)}return id}catch(_){return "Player-Guest"}}
-  const playerId=getPlayerId();
-  function loadOfflinePlayer(){try{const p=JSON.parse(localStorage.getItem(OFFLINE_PLAYER_KEY)||"{}");return {maxMultiplier:Number(p.maxMultiplier)||0,totalVolume:Number(p.totalVolume)||0}}catch(_){return {maxMultiplier:0,totalVolume:0}}}
-  function saveOfflinePlayer(p){try{localStorage.setItem(OFFLINE_PLAYER_KEY,JSON.stringify(p))}catch(_){}}
-  async function syncPlayer(p){try{const {error}=await supabase.from("leaderboard").upsert({wallet_address:playerId,max_multiplier:p.maxMultiplier||0,total_volume:p.totalVolume||0,updated_at:new Date().toISOString()},{onConflict:"wallet_address"});if(error)throw error}catch(e){console.warn("Leaderboard sync failed",e)}}
-  function openLeaderboard(){document.getElementById("leaderboardOverlay").classList.add("open");renderLeaderboard("multiplier")}
-  function closeLeaderboard(){document.getElementById("leaderboardOverlay").classList.remove("open")}
-  async function renderLeaderboard(mode){const tbody=document.getElementById("leaderboardRows");tbody.innerHTML="<tr><td colspan=3>Loading global leaderboard…</td></tr>";document.getElementById("leaderboardStatHeading").textContent=mode==="multiplier"?"Max x":"Volume $WRC";document.querySelectorAll(".leaderboard-tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===mode));try{const column=mode==="multiplier"?"max_multiplier":"total_volume";const {data,error}=await supabase.from("leaderboard").select("wallet_address,max_multiplier,total_volume").order(column,{ascending:false}).limit(50);if(error)throw error;const rows=(data||[]).map(r=>({name:r.wallet_address,value:Number(mode==="multiplier"?r.max_multiplier:r.total_volume)||0,you:r.wallet_address===playerId}));const own=loadOfflinePlayer();if(!rows.some(r=>r.you))rows.push({name:playerId,value:mode==="multiplier"?own.maxMultiplier:own.totalVolume,you:true});rows.sort((x,y)=>y.value-x.value);tbody.innerHTML=rows.map((r,i)=>{const n=i+1,c=n===1?"crown-gold":n===2?"crown-silver":n===3?"crown-bronze":"",safe=String(r.name).replace(/[&<>]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[ch])),v=mode==="multiplier"?r.value.toFixed(2)+"x":r.value.toLocaleString();return '<tr class="'+(r.you?"you-row":"")+'"><td class="rank">#'+n+'</td><td>'+(c?'<span class="crown '+c+'">👑</span>':"")+safe+(r.you?" (you)":"")+'</td><td>'+v+'</td></tr>'}).join("")||"<tr><td colspan=3>No scores yet.</td></tr>"}catch(e){console.error("Leaderboard load failed",e);tbody.innerHTML="<tr><td colspan=3>Leaderboard unavailable. Check Supabase setup and RLS policies.</td></tr>"}}
+  const OFFLINE_PLAYER_KEY = "dgcOfflinePlayer";
+  function loadOfflinePlayer() { try { const saved=JSON.parse(localStorage.getItem(OFFLINE_PLAYER_KEY)||"{}"); return {maxMultiplier:Number(saved.maxMultiplier)||0,totalVolume:Number(saved.totalVolume)||0}; } catch (_) { return {maxMultiplier:0,totalVolume:0}; } }
+  function saveOfflinePlayer(player) { try { localStorage.setItem(OFFLINE_PLAYER_KEY,JSON.stringify(player)); } catch (_) {} }
+  const mockLeaderboardPlayers=[{name:"SoupBoss",multiplier:48.72,volume:98500},{name:"PanWhale",multiplier:36.40,volume:76200},{name:"ChefDegen",multiplier:29.18,volume:53100},{name:"BrothKing",multiplier:22.65,volume:42900},{name:"Sizzle",multiplier:18.30,volume:31500},{name:"WokWizard",multiplier:14.92,volume:26750},{name:"LilLadle",multiplier:11.70,volume:19800},{name:"HotPotato",multiplier:9.45,volume:14300},{name:"BurnerX",multiplier:7.80,volume:9250},{name:"NoodleRun",multiplier:6.25,volume:6100}];
+  function openLeaderboard() { document.getElementById("leaderboardOverlay").classList.add("open"); renderLeaderboard("multiplier"); }
+  function closeLeaderboard() { document.getElementById("leaderboardOverlay").classList.remove("open"); }
+  function renderLeaderboard(mode) {
+    const you = loadOfflinePlayer();
+    const rows = mockLeaderboardPlayers.map(p => ({name:p.name,value:mode === "multiplier" ? p.multiplier : p.volume,you:false}));
+    rows.push({name:"You",value:mode === "multiplier" ? you.maxMultiplier : you.totalVolume,you:true});
+    rows.sort((a,b) => b.value-a.value);
+    document.getElementById("leaderboardStatHeading").textContent = mode === "multiplier" ? "Max x" : "Volume $WRC";
+    document.querySelectorAll(".leaderboard-tab").forEach(tab => tab.classList.toggle("active",tab.dataset.mode === mode));
+    document.getElementById("leaderboardRows").innerHTML = rows.map((row,index) => {
+      const rank = index + 1;
+      const crownClass = rank === 1 ? "crown-gold" : rank === 2 ? "crown-silver" : rank === 3 ? "crown-bronze" : "";
+      const crown = crownClass ? '<span class="crown ' + crownClass + '" aria-label="Rank ' + rank + ' crown">👑</span>' : "";
+      const rewardAmounts = [10, 5, 3, 1, 1];
+      const reward = rank <= 5 ? '<span class="reward-tag">' + rewardAmounts[rank-1] + ' USDC</span>' : "";
+      const stat = mode === "multiplier" ? row.value.toFixed(2) + "x" : row.value.toLocaleString(undefined,{maximumFractionDigits:2});
+      return '<tr class="' + (row.you ? "you-row" : "") + '"><td class="rank">#' + rank + '</td><td>' + crown + row.name + reward + '</td><td>' + stat + '</td></tr>';
+    }).join("");
+  }
 
   document.addEventListener("keydown",event=>{if(event.key==="Escape")closeLeaderboard();});
   /* =========================================
@@ -2177,7 +2187,6 @@ updateSoundToggle();
     const offlinePlayer = loadOfflinePlayer();
     offlinePlayer.totalVolume += bet;
     saveOfflinePlayer(offlinePlayer);
-    syncPlayer(offlinePlayer);
 
     updateBalance();
 
@@ -2491,7 +2500,6 @@ updateSoundToggle();
     const offlinePlayer = loadOfflinePlayer();
     offlinePlayer.maxMultiplier = Math.max(offlinePlayer.maxMultiplier, currentMultiplier);
     saveOfflinePlayer(offlinePlayer);
-    syncPlayer(offlinePlayer);
 
     balance += winAmount;
 
