@@ -1458,7 +1458,7 @@
       const rank = index + 1;
       const crownClass = rank === 1 ? "crown-gold" : rank === 2 ? "crown-silver" : rank === 3 ? "crown-bronze" : "";
       const crown = crownClass ? '<span class="crown ' + crownClass + '" aria-label="Rank ' + rank + ' crown">👑</span>' : "";
-      const rewardAmounts = [50,25,15,7,3];
+      const rewardAmounts = [10, 5, 3, 1, 1];
       const reward = rank <= 5 ? '<span class="reward-tag">' + rewardAmounts[rank-1] + ' USDC</span>' : "";
       const stat = mode === "multiplier" ? row.value.toFixed(2) + "x" : row.value.toLocaleString(undefined,{maximumFractionDigits:2});
       return '<tr class="' + (row.you ? "you-row" : "") + '"><td class="rank">#' + rank + '</td><td>' + crown + row.name + reward + '</td><td>' + stat + '</td></tr>';
